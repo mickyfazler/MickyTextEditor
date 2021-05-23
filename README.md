@@ -1,3 +1,2 @@
-# MickyTextEditor
-I created my own Text editor using tkinter (It is better than Notepad.LOL)
-Please give your feedback.
+Before using this code please install tkinter(pip install tk)..Please give your feedback.
+Better than Notepad.Atleast try it .
