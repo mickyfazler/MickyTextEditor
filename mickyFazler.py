@@ -8,53 +8,7 @@ root.geometry("1200x800")
 root.title("Untitled        Micky Text Editor")
 root.wm_iconbitmap('icon.ico')
 
-# def destop_startup_Func():
 
-#     #Getting current directory and executable file location
-#     installed_directory=os.getcwd()
-#     executable_file=os.getcwd()+"\mickyFazler.exe"
-
-
-#     #Getting StartMenu diractory location
-#     import win32com.client
-#     objShell = win32com.client.Dispatch("WScript.Shell")
-#     allUserProgramsMenu = objShell.SpecialFolders("AllUsersPrograms")
-#     userMenu_location = objShell.SpecialFolders("StartMenu")
-#     # print(userMenu_location)              #Start menu location and it must be start from c:/users/user.....       
-
-
-#     #Adding shortcut on Desktop
-#     import winshell
-#     from win32com.client import Dispatch
-#     desktop = winshell.desktop()
-#     # print(desktop)                        #This is desktop location
-#     path = os.path.join(desktop, "Micky Text Editor.lnk")
-#     target = fr"{executable_file}"
-#     wDir = fr"{installed_directory}"
-#     icon = fr"{executable_file}"
-#     shell = Dispatch('WScript.Shell')
-#     shortcut = shell.CreateShortCut(path)
-#     shortcut.Targetpath = target
-#     shortcut.WorkingDirectory = wDir
-#     shortcut.IconLocation = icon
-#     shortcut.save()
-
-
-#     #Adding shortcut on  on Start Meby
-    
-#     path = os.path.join(userMenu_location, "Micky Text Editor.lnk")
-#     target = fr"{executable_file}"
-#     wDir = fr"{installed_directory}"
-#     icon = fr"{executable_file}"
-#     shell = Dispatch('WScript.Shell')
-#     shortcut = shell.CreateShortCut(path)
-#     shortcut.Targetpath = target
-#     shortcut.WorkingDirectory = wDir
-#     shortcut.IconLocation = icon
-#     shortcut.save()
-# destop_startup_Func()               #This will crate shortcut on desktop and startMenu
-
-# I comment out this function because we don't need to manually open file on Desktop and startup ...You can do it using innosetup
 
 
 ############################################## Start Main Menu  ###################################################
@@ -331,50 +285,55 @@ status_bar.pack(side=tk.BOTTOM)
 
 
 
-existing_file_character=0
+existing_file_character=""
 
 
 
 does_text_changed=False
+
+
 # print("change1",len(text_editor.get(1.0,tk.END)))
 def change_status_bar_Func(event=None):     #"event=None" sothat we can give keyboard shortcut
-    global does_text_changed,existing_file_character
+    global does_text_changed,existing_file_character            # Remember global must be the first 
+    
     # print("change2",len(text_editor.get(1.0,tk.END)))
     current_file_character=text_editor.get(1.0,"end").replace(" ","").replace("\n","").replace("\t","")
     # print(current_file_character,"cur")
     # print("Current")
+    # print("chan1 ",existing_file_character)
+    # print("chan2 ",current_file_character)
     changed=not (existing_file_character == current_file_character)
     # print(changed)
     # changed=! (existing_file_character == current_file_character)         # It did not work.I want to invert True<>False.I don't know why Mind it
     # print(changed)
     
-    if ((text_editor.edit_modified() and does_existing_file_opened and changed) or (text_editor.edit_modified() and does_existing_file_opened==False and len(current_file_character) != 0)):  #If you open any existing file then our text editor value change according our new opened file text.So if you Try to close the opened file without changing our exit function will told us to save.
+    if ((does_existing_file_opened and changed) or ( does_existing_file_opened==False and len(current_file_character) != 0)):  #If you open any existing file then our text editor value change according our new opened file text.So if you Try to close the opened file without changing our exit function will told us to save.
         # print("Changed text baby")
         # print(does_text_changed)
         does_text_changed=True
-        words=len(text_editor.get(1.0,"end").split())
+        len_words=len(text_editor.get(1.0,"end").split())
+        # print(len_words)
         characters=len(text_editor.get(1.0,"end").replace(" ","").replace("\n","").replace("\t",""))
-        status_bar.config(text=f"Characters: {characters} Words: {words}")
+        status_bar.config(text=f"Characters: {characters} len_words: {len_words}")
         # print("main")
-    # def untitled_or_not_Func():
-    #     print("Start Calling")
-        if (text_editor.edit_modified() and does_existing_file_opened==False and len(current_file_character) != 0):
+   
+        if (does_existing_file_opened==False and len(current_file_character) != 0):
             # print(current_file_character,"if")
             root.title("*Untitled        Micky Text Editor")
-        elif (text_editor.edit_modified() and does_existing_file_opened and changed):
+        elif (does_existing_file_opened and changed):
             root.title("*"+os.path.basename(url)+"          Micky Text Editor")
 
 
         # print("End Calling")
-    # untitled_or_not_Func()
 
     else:                     
-        if(text_editor.edit_modified() and does_existing_file_opened==False and len(current_file_character) == 0):
+        if(does_existing_file_opened==False and len(current_file_character) == 0):
             does_text_changed=False     #Just think If we write something on blank then does_text_changed=True  and then if we remove all the text and close the window it will ask for save because does_text_changed=True so we make it False
             # print(current_file_character,"else")
             # print("else")
             root.title("Untitled        Micky Text Editor")
-        elif (text_editor.edit_modified() and does_existing_file_opened and not changed):
+        # elif (text_editor.edit_modified() and does_existing_file_opened and not changed):
+        elif (does_existing_file_opened and not changed):
             root.title(os.path.basename(url)+"          Micky Text Editor")
 
 
@@ -398,11 +357,35 @@ url=""
 
 #new file functionality
 def new_file_Func(event=None):          # It will just remove all the text from textEditor
-    global url,does_existing_file_opened
-    url=""
-    text_editor.delete(1.0,tk.END)
-    root.title("Untitled        Micky Text Editor")
-    does_existing_file_opened=False
+    global url,does_existing_file_opened,does_text_changed,existing_file_character
+    
+    # copied from on_closing_Func()
+    current_file_character=text_editor.get(1.0,"end").replace(" ","").replace("\n","").replace("\t","")         # copied from upper
+    changed=not (existing_file_character == current_file_character)
+    if (len(current_file_character) != 0 and does_existing_file_opened==False ) or (does_existing_file_opened and changed):
+        a=messagebox.askyesnocancel("Quit", "Do you want to save")          
+        if a==True:     # if click yes
+            does_saved=save_file_Func()
+            if does_saved==True:        
+                url=""
+                text_editor.delete(1.0,tk.END)
+                root.title("Untitled        Micky Text Editor")
+                does_existing_file_opened=False
+
+        elif a==False:       
+            url=""
+            text_editor.delete(1.0,tk.END)
+            root.title("Untitled        Micky Text Editor")
+            does_existing_file_opened=False
+        
+        else:           
+            pass   
+    
+    else:
+        url=""
+        text_editor.delete(1.0,tk.END)
+        root.title("Untitled        Micky Text Editor")
+        does_existing_file_opened=False
 
 
 
@@ -411,23 +394,55 @@ does_existing_file_opened=False
 # Open file functionality
 def open_file_Func(event=None):
     global url,does_existing_file_opened,existing_file_character
-    url=filedialog.askopenfilename(initialdir=os.getcwd(),title="Select File Baby",filetypes=(("Text File Baby","*.txt"),("All files Baby","*.*")))
-    # print(url)
-    try:
-        with open(url,"r") as f:
+
+    # copied from on_closing_Func()
+    current_file_character=text_editor.get(1.0,"end").replace(" ","").replace("\n","").replace("\t","")         # copied from upper
+    changed=not (existing_file_character == current_file_character)
+    if (len(current_file_character) != 0 and does_existing_file_opened==False ) or (does_existing_file_opened and changed):
+        a=messagebox.askyesnocancel("Quit", "Do you want to save")          
+        if a==True:     # if click yes
+            does_saved=save_file_Func()
+            if does_saved==True:        
+                url=filedialog.askopenfilename(initialdir=os.getcwd(),title="Select File Baby",filetypes=(("Text File Baby","*.txt"),("All files Baby","*.*")))
+                # print(url)
+                try:
+                    with open(url,"r") as f:
+                        text_editor.delete(1.0,tk.END)
+                        text_editor.insert(1.0,f.read())
+                        # print(f.read())
+                    root.title(os.path.basename(url)+"          Micky Text Editor")
+                    does_existing_file_opened=True
+                    existing_file_character=text_editor.get(1.0,"end").replace(" ","").replace("\n","").replace("\t","")
+                    # print(existing_file_character,"dav")
+                except Exception as e:
+                    print("Exception1")         # when open dialoge appear you did not select any file   
+
+
+        elif a==False:       
+            url=""
             text_editor.delete(1.0,tk.END)
-            text_editor.insert(1.0,f.read())
-            # print(f.read())
-        root.title(os.path.basename(url)+"          Micky Text Editor")
-        does_existing_file_opened=True
-        existing_file_character=text_editor.get(1.0,"end").replace(" ","").replace("\n","").replace("\t","")
-        # print(existing_file_character,"dav")
-    except Exception as e:
-        print("Exception1")
+            root.title("Untitled        Micky Text Editor")
+            does_existing_file_opened=False
+        
+    else:           
+        url=filedialog.askopenfilename(initialdir=os.getcwd(),title="Select File Baby",filetypes=(("Text File Baby","*.txt"),("All files Baby","*.*")))
+        # print(url)
+        try:
+            with open(url,"r") as f:
+                text_editor.delete(1.0,tk.END)
+                text_editor.insert(1.0,f.read())
+                # print(f.read())
+            root.title(os.path.basename(url)+"          Micky Text Editor")
+            does_existing_file_opened=True
+            existing_file_character=text_editor.get(1.0,"end").replace(" ","").replace("\n","").replace("\t","")
+            # print(existing_file_character,"dav")
+        except Exception as e:
+            print("Exception1")         # when open dialoge appear you did not select any file   
 
 # Save file functionality
 def save_file_Func(event=None):
-    global url
+    global url,does_existing_file_opened,does_text_changed,existing_file_character
+
     content=text_editor.get(1.0,tk.END)
     # print(url)
     try:
@@ -443,6 +458,13 @@ def save_file_Func(event=None):
             # print(url.name)         #We will get the directory            It's completly own explore
             url=url.name
             root.title(os.path.basename(url)+"          Micky Text Editor")
+
+        does_existing_file_opened=True              # If you create new file and change if you don't do that then still show "*untitled" rather that "*filename"  
+        existing_file_character=text_editor.get(1.0,"end").replace(" ","").replace("\n","").replace("\t","")   
+        does_text_changed=False
+        # print("save",existing_file_character)
+        change_status_bar_Func()            # Otherwise it will not update status bar or only give name instead of *name
+        return True             # I used on on_closing_Func
     except Exception as e:
         print("Exception2")
 
@@ -458,34 +480,34 @@ def save_as_file_Func(event=None):
     except Exception as e:
         print("Exception3")
 # Exit file functionality
-def exit_file_Func(event=None):
-    global url, does_text_changed
-    # print("exit",len(text_editor.get(1.0,tk.END)))
-    # print(does_text_changed)
-    try:
-        if does_text_changed:
-            mbox = messagebox.askyesnocancel('Warning', 'Do you want to save the file ?')
-            if mbox is True:        #If we click yes
-                if url:             #If its an existing opened file
-                    content = text_editor.get(1.0, tk.END)
-                    with open(url, 'w', encoding='utf-8') as f:
-                        f.write(content)
-                        root.destroy()      #It will destroy after saving file
-                else:           #If it's now created file
-                    content = text_editor.get(1.0, tk.END)
-                    url = filedialog.asksaveasfile(mode = 'w', defaultextension='.txt', filetypes=(('Text File', '*.txt'), ('All files', '*.*')))
-                    url.write(content)
-                    url.close()
-                    root.destroy()      #It will destroy after saving file
-            elif mbox is False:     #If we click no
-                # print("Don't save")
-                root.destroy()
+# def exit_file_Func(event=None):
+#     global url, does_text_changed
+#     # print("exit",len(text_editor.get(1.0,tk.END)))
+#     # print(does_text_changed)
+#     try:
+#         if does_text_changed:
+#             mbox = messagebox.askyesnocancel('Warning', 'Do you want to save the file ?')
+#             if mbox is True:        #If we click yes
+#                 if url:             #If its an existing opened file
+#                     content = text_editor.get(1.0, tk.END)
+#                     with open(url, 'w', encoding='utf-8') as f:
+#                         f.write(content)
+#                         root.destroy()      #It will destroy after saving file
+#                 else:           #If it's now created file
+#                     content = text_editor.get(1.0, tk.END)
+#                     url = filedialog.asksaveasfile(mode = 'w', defaultextension='.txt', filetypes=(('Text File', '*.txt'), ('All files', '*.*')))
+#                     url.write(content)
+#                     url.close()
+#                     root.destroy()      #It will destroy after saving file
+#             elif mbox is False:     #If we click no
+#                 # print("Don't save")
+#                 root.destroy()
             
-        else:
-            # print("Please type something")
-            root.destroy()
-    except:
-        print("Exception4")
+#         else:
+#             # print("Please type something")
+#             root.destroy()
+#     except:
+#         print("Exception4")
 
 
 
@@ -614,15 +636,46 @@ def show_hide_statusbar_Func():
         status_bar.pack(side=tk.BOTTOM)
         show_hide_statusbar = True 
 
-# Open file functionality
+
+def on_closing_Func(event=None):           # when will click x to close the programme  
+    global does_text_changed,existing_file_character
+    current_file_character=text_editor.get(1.0,"end").replace(" ","").replace("\n","").replace("\t","")         # copied from upper
+    changed=not (existing_file_character == current_file_character)
+    if (len(current_file_character) != 0 and does_existing_file_opened==False ) or (does_existing_file_opened and changed):
+            # print("1",text_editor.edit_modified())
+            # print("2",does_existing_file_opened)
+            # print("2",does_existing_file_opened)
+
+        a=messagebox.askyesnocancel("Quit", "Do you want to save")          # yes=True,No=False,calcel=None
+        if a==True:     # if click yes
+            does_saved=save_file_Func()
+            if does_saved==True:        # That means you savd.....When your saved window location appear and you close it without saving ....To prevent that .....Talent FAZLE
+                root.destroy()
+
+        elif a==False:        # if click no
+            root.destroy()
+        # print(a)
+        
+        else:               # if you give cancel
+            pass        
+    else:       # If you don't type anything or did not overwrite on opened file it will close
+        root.destroy()
+        
+
+   
+
+root.protocol("WM_DELETE_WINDOW", on_closing_Func)           # when will click x to close the programme this function(on_closing_Func) will run 
+
 
 
 # File command
 file.add_command(label="New",image=new_icon,compound=tk.LEFT,accelerator="Ctrl+N",command=new_file_Func)  #compound=tk.LEFT will give your image left    #accelerator will add text at the right
 file.add_command(label="Open",image=open_icon,compound=tk.LEFT,accelerator="Ctrl+O",command=open_file_Func) 
 file.add_command(label="Save",image=save_icon,compound=tk.LEFT,accelerator="Ctrl+S",command=save_file_Func) 
-file.add_command(label="Save As",image=save_as_icon,compound=tk.LEFT,accelerator="Ctrl+Alt+S",command=save_as_file_Func) 
-file.add_command(label="Exit",image=exit_icon,compound=tk.LEFT,accelerator="Ctrl+Q",command=exit_file_Func) 
+file.add_command(label="Save As",image=save_as_icon,compound=tk.LEFT,accelerator="Ctrl+Alt+S",command=save_as_file_Func)
+
+# file.add_command(label="Exit",image=exit_icon,compound=tk.LEFT,accelerator="Ctrl+Q",command=exit_file_Func) 
+file.add_command(label="Exit",image=exit_icon,compound=tk.LEFT,accelerator="Ctrl+Q",command=on_closing_Func) 
 
 # Edit Command
 
@@ -681,7 +734,8 @@ root.bind("<Control-n>", new_file_Func)
 root.bind("<Control-o>", open_file_Func)
 root.bind("<Control-s>", save_file_Func)
 root.bind("<Control-Alt-s>", save_as_file_Func)
-root.bind("<Control-q>", exit_file_Func)
+# root.bind("<Control-q>", exit_file_Func)
+root.bind("<Control-q>", on_closing_Func)       
 root.bind("<Control-f>", find_file_Func)
 
 
